@@ -1,13 +1,18 @@
 package frc.robot.subsystems.swervedrive;
 
 import com.revrobotics.CANSparkMax;
+
+import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.SubsystemBase;
+
 import com.ctre.phoenix.motorcontrol.can.WPI_VictorSPX;
 import com.revrobotics.CANSparkLowLevel.MotorType;
 
-public class shooter 
+public class shooter extends SubsystemBase
 {
-    private static CANSparkMax shooterMotorA = new CANSparkMax(12, MotorType.kBrushless);
-    private static WPI_VictorSPX shooterMotorB = new WPI_VictorSPX(13);
+    private final CANSparkMax shooterMotorA;
+    private final WPI_VictorSPX shooterMotorB;
     /**
      * 
      * @param shooterAID the CAN bus ID
@@ -23,8 +28,7 @@ public class shooter
      * do this in the teleopPeriodic
      * @param balls the boolean value of the button
      */
-    //TODO the speeds might be diffrent so set the speeds acordingly
-    public static void shoot(boolean balls)
+    public void shoot(boolean balls)
     {
         if(balls)
         {
@@ -38,11 +42,24 @@ public class shooter
             shooterMotorB.set(0);
         }
     }
-
-    public static void shoot(){
-        double speed =0.8;
-        shooterMotorA.set(speed);
-        shooterMotorB.set(speed + 0.2);
+    public Command shootCommand()
+    {
+        return Commands.runOnce(()-> shoot());
+    }
+    public void shoot()
+    {
+        //tiemr+ramp time
+        long startTime = System.currentTimeMillis();
+        long elapsedTime = System.currentTimeMillis() - startTime;
+        long elapsedSeconds = elapsedTime / 1000;
+        while(elapsedSeconds>=3)
+        {
+            elapsedTime = System.currentTimeMillis() - startTime;
+            elapsedSeconds = elapsedTime / 1000;
+            double speed =0.8;
+            shooterMotorA.set(speed);
+            shooterMotorB.set(speed + 0.2);
+        }
 
     }
 }

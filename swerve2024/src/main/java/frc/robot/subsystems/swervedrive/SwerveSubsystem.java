@@ -43,7 +43,7 @@ public class SwerveSubsystem extends SubsystemBase
   /**
    * Swerve drive object.
    */
-  private final SwerveDrive swerveDrive;
+  private static SwerveDrive swerveDrive;
   /**
    * Maximum speed of the robot in meters per second, used to limit acceleration.
    */
@@ -208,7 +208,6 @@ public class SwerveSubsystem extends SubsystemBase
                                                                       swerveDrive.getMaximumVelocity()));
     });
   }
-
   /**
    * Command to drive the robot using translative values and heading as a setpoint.
    *
@@ -270,7 +269,6 @@ public class SwerveSubsystem extends SubsystemBase
   {
     return run(() -> {
       // Make the robot move
-      //TODO feild relativity turn this to trun if it acts up
       swerveDrive.drive(new Translation2d(Math.pow(translationX.getAsDouble(), 3) * swerveDrive.getMaximumVelocity(),
                                           Math.pow(translationY.getAsDouble(), 3) * swerveDrive.getMaximumVelocity()),
                         Math.pow(angularRotationX.getAsDouble(), 3) * swerveDrive.getMaximumAngularVelocity(),
@@ -307,6 +305,10 @@ public class SwerveSubsystem extends SubsystemBase
    * @param velocity Velocity according to the field.
    */
   public void driveFieldOriented(ChassisSpeeds velocity)
+  {
+    swerveDrive.driveFieldOriented(velocity);
+  }
+  public static void autonFieldOriented(ChassisSpeeds velocity)
   {
     swerveDrive.driveFieldOriented(velocity);
   }
