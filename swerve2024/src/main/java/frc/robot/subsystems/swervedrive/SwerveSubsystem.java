@@ -25,8 +25,10 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Config;
 import frc.robot.Constants.AutonConstants;
 import java.io.File;
 import java.util.function.DoubleSupplier;
+
 import org.photonvision.PhotonCamera;
 import org.photonvision.targeting.PhotonPipelineResult;
+
 import swervelib.SwerveController;
 import swervelib.SwerveDrive;
 import swervelib.SwerveDriveTest;
@@ -312,6 +314,20 @@ public class SwerveSubsystem extends SubsystemBase
   {
     swerveDrive.driveFieldOriented(velocity);
   }
+  /*    return run(() -> {
+      double xInput = Math.pow(translationX.getAsDouble(), 3); // Smooth controll out
+      double yInput = Math.pow(translationY.getAsDouble(), 3); // Smooth controll out
+      // Make the robot move
+      driveFieldOriented(swerveDrive.swerveController.getTargetSpeeds(xInput, yInput,
+                                                                      headingX.getAsDouble(),
+                                                                      headingY.getAsDouble(),
+                                                                      swerveDrive.getOdometryHeading().getRadians(),
+                                                                      swerveDrive.getMaximumVelocity())); 
+                                                                        public void driveFieldOriented(ChassisSpeeds velocity) {
+    ChassisSpeeds fieldOrientedVelocity =
+        ChassisSpeeds.fromFieldRelativeSpeeds(velocity, getOdometryHeading());
+    drive(fieldOrientedVelocity);
+  }*/
 
   /**
    * Drive according to the chassis robot oriented velocity.
@@ -363,6 +379,7 @@ public class SwerveSubsystem extends SubsystemBase
   public Pose2d getPose()
   {
     return swerveDrive.getPose();
+    //return new Pose2d(swerveDrive.getPose().getTranslation(),swerveDrive.getPose().getRotation().plus(new Rotation2d(-1,0)));
   }
 
   /**
@@ -374,6 +391,80 @@ public class SwerveSubsystem extends SubsystemBase
   {
     swerveDrive.setChassisSpeeds(chassisSpeeds);
   }
+
+
+    /*    return run(() -> {
+      double xInput = Math.pow(translationX.getAsDouble(), 3); // Smooth controll out
+      double yInput = Math.pow(translationY.getAsDouble(), 3); // Smooth controll out
+      // Make the robot move
+      driveFieldOriented(swerveDrive.swerveController.getTargetSpeeds(xInput, yInput,
+                                                                      headingX.getAsDouble(),
+                                                                      headingY.getAsDouble(),
+                                                                      swerveDrive.getOdometryHeading().getRadians(),
+                                                                      swerveDrive.getMaximumVelocity())); 
+                                                                        
+                                                                      
+  public void driveFieldOriented(ChassisSpeeds velocity) {
+    ChassisSpeeds fieldOrientedVelocity =
+        ChassisSpeeds.fromFieldRelativeSpeeds(velocity, getOdometryHeading());
+    drive(fieldOrientedVelocity);
+
+      public void setChassisSpeeds(ChassisSpeeds chassisSpeeds) {
+    SwerveDriveTelemetry.desiredChassisSpeeds[1] = chassisSpeeds.vyMetersPerSecond;
+    SwerveDriveTelemetry.desiredChassisSpeeds[0] = chassisSpeeds.vxMetersPerSecond;
+    SwerveDriveTelemetry.desiredChassisSpeeds[2] =
+        Math.toDegrees(chassisSpeeds.omegaRadiansPerSecond);
+
+    setRawModuleStates(kinematics.toSwerveModuleStates(chassisSpeeds), false);
+
+
+      public void drive(ChassisSpeeds velocity) {
+    drive(velocity, false, new Translation2d());
+  }
+  }
+
+  public void drive(
+      ChassisSpeeds velocity, boolean isOpenLoop, Translation2d centerOfRotationMeters) {
+
+    // Thank you to Jared Russell FRC254 for Open Loop Compensation Code
+    // https://www.chiefdelphi.com/t/whitepaper-swerve-drive-skew-and-second-order-kinematics/416964/5
+    if (chassisVelocityCorrection) {
+      velocity = ChassisSpeeds.discretize(velocity, 0.02);
+    }
+
+    // Heading Angular Velocity Deadband, might make a configuration option later.
+    // Originally made by Team 1466 Webb Robotics.
+    // Modified by Team 7525 Pioneers and BoiledBurntBagel of 6036
+    if (headingCorrection) {
+      if (Math.abs(velocity.omegaRadiansPerSecond) < HEADING_CORRECTION_DEADBAND
+          && (Math.abs(velocity.vxMetersPerSecond) > HEADING_CORRECTION_DEADBAND
+              || Math.abs(velocity.vyMetersPerSecond) > HEADING_CORRECTION_DEADBAND)) {
+        velocity.omegaRadiansPerSecond =
+            swerveController.headingCalculate(
+                getOdometryHeading().getRadians(), lastHeadingRadians);
+      } else {
+        lastHeadingRadians = getOdometryHeading().getRadians();
+      }
+    }
+
+    // Display commanded speed for testing
+    if (SwerveDriveTelemetry.verbosity == TelemetryVerbosity.HIGH) {
+      SmartDashboard.putString("RobotVelocity", velocity.toString());
+    }
+    if (SwerveDriveTelemetry.verbosity.ordinal() >= TelemetryVerbosity.HIGH.ordinal()) {
+      SwerveDriveTelemetry.desiredChassisSpeeds[1] = velocity.vyMetersPerSecond;
+      SwerveDriveTelemetry.desiredChassisSpeeds[0] = velocity.vxMetersPerSecond;
+      SwerveDriveTelemetry.desiredChassisSpeeds[2] = Math.toDegrees(velocity.omegaRadiansPerSecond);
+    }
+
+    // Calculate required module states via kinematics
+    SwerveModuleState[] swerveModuleStates =
+        kinematics.toSwerveModuleStates(velocity, centerOfRotationMeters);
+
+    setRawModuleStates(swerveModuleStates, isOpenLoop);
+  }
+
+  }*/
 
   /**
    * Post the trajectory to the field.

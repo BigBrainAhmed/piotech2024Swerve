@@ -9,9 +9,6 @@ import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
-import frc.robot.subsystems.swervedrive.arm;
-import frc.robot.subsystems.swervedrive.intake;
-import frc.robot.subsystems.swervedrive.shooter;
 
 //import frc.robot.subsystems.swervedrive.test;
 
@@ -19,7 +16,6 @@ import java.io.File;
 import java.io.IOException;
 import swervelib.parser.SwerveParser;
 
-import edu.wpi.first.wpilibj.PS4Controller;
 /**
  * The VM is configured to automatically run this class, and to call the functions corresponding to each mode, as
  * described in the TimedRobot documentation. If you change the name of this class or the package after creating this
@@ -27,9 +23,6 @@ import edu.wpi.first.wpilibj.PS4Controller;
  */
 public class Robot extends TimedRobot
 {
-  intake Intake = new intake(11);
-  shooter Shooter = new shooter(12, 13);
-  arm Arm = new arm(9, 10, 0);
 
   private static Robot   instance;
   private        Command m_autonomousCommand;
@@ -37,9 +30,8 @@ public class Robot extends TimedRobot
   private RobotContainer m_robotContainer;
 
   private Timer disabledTimer;
-  private Timer elapsedTime = new Timer();;
+  private Timer elapsedTime = new Timer();
   private double time=0;
-  PS4Controller controller = new PS4Controller(0);
   //test a = new test(0);
 
   public Robot()
@@ -81,7 +73,7 @@ public class Robot extends TimedRobot
     if(time>=(1000.0/50))
     {
       //System.out.println("a.encoderVal()");
-      System.out.println(Arm.encoderVal());
+      System.out.println(m_robotContainer.encoderVals());
       time=0;
     }
     // Runs the Scheduler.  This is responsible for polling buttons, adding newly-scheduled
@@ -178,12 +170,7 @@ public class Robot extends TimedRobot
   public void teleopPeriodic()
   {
     //System.out.println(a.encoderVal());
-    Shooter.shoot(controller.getL2Button());
-    
-    Intake.griper(controller.getR2Button(), controller.getR1Button());
-
-    Arm.manuel(controller.getOptionsButton(), controller.getShareButton(), controller.getTriangleButton(), controller.getCircleButton(), controller.getSquareButton(), controller.getCrossButton());
-    
+    m_robotContainer.PS4buttons();
   }
 
   @Override

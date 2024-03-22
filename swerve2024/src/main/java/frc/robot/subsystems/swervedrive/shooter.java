@@ -28,13 +28,20 @@ public class shooter extends SubsystemBase
      * do this in the teleopPeriodic
      * @param balls the boolean value of the button
      */
-    public void shoot(boolean balls)
+    public void shoot(boolean balls,boolean balls2)
     {
+        double speed =0.8;
         if(balls)
         {
-            double speed =0.8;
+            
             shooterMotorA.set(speed);
             shooterMotorB.set(speed + 0.2);
+        }
+        else if(balls2)
+        {
+            speed*=-1;
+            shooterMotorA.set(speed);
+            shooterMotorB.set(speed - 0.2);
         }
         else 
         {
@@ -42,17 +49,17 @@ public class shooter extends SubsystemBase
             shooterMotorB.set(0);
         }
     }
-    public Command shootCommand()
+    public Command shootCommand(int seconds)
     {
-        return Commands.runOnce(()-> shoot());
+        return Commands.runOnce(()-> shoot(seconds));
     }
-    public void shoot()
+    public void shoot(int seconds)
     {
         //tiemr+ramp time
         long startTime = System.currentTimeMillis();
         long elapsedTime = System.currentTimeMillis() - startTime;
         long elapsedSeconds = elapsedTime / 1000;
-        while(elapsedSeconds>=3)
+        while(elapsedSeconds>=seconds)
         {
             elapsedTime = System.currentTimeMillis() - startTime;
             elapsedSeconds = elapsedTime / 1000;

@@ -11,7 +11,7 @@ public class arm extends SubsystemBase
 {
     private final CANSparkMax armMotorA;
     private final CANSparkMax armMotorB;
-    private DutyCycleEncoder armEncoder;
+    private static DutyCycleEncoder armEncoder;
 
     /**
      * @param motorAID the CAN bus ID
@@ -30,14 +30,14 @@ public class arm extends SubsystemBase
      */
     public void presetT()
     {
-        angle(0.2, 1, 0.05);
+        angle(0.2, 1.12, 0.05);
     }
     /**
      * set this to button 3 in robotContainer file in the configureBindings method replace if it alredy exist for that button
      */
     public void presetO()
     {
-        angle(0.1, 0.916, 0.02);
+        angle(0.1, 2, 0.02);
     }
     /**
      * set this to button 2 in robotContainer file in the configureBindings method replace if it alredy exist for that button
@@ -45,14 +45,14 @@ public class arm extends SubsystemBase
     
     public void presetX()
     {
-        angle(0.1, 0.916, 0.5);
+        angle(0.1, 0.916, 0.05);
     }
     /**
      * set this to button 1 in robotContainer file in the configureBindings method replace if it alredy exist for that button
      */
     public void presetS()
     {
-        angle(0.1, 0, 0.2);
+        angle(0.1, 1.045, 0.2);
     }
     /**
      * 
@@ -62,15 +62,15 @@ public class arm extends SubsystemBase
     public void angle(double speed, double theta, double errorbound)
     {
         if (theta - errorbound > armEncoder.getDistance()) {
-            armMotorA.set(speed * -1);
-            armMotorB.set(speed);
-            System.out.println("down");
+            armMotorA.set(speed );
+            armMotorB.set(speed* -1);
+            System.out.println("up");
         } 
         
         if (theta + errorbound < armEncoder.getDistance()) {
-            armMotorA.set(speed);
-            armMotorB.set(speed * -1);
-            System.out.println("up");
+            armMotorA.set(speed* -1);
+            armMotorB.set(speed );
+            System.out.println("down");
         } 
         if(!(theta - errorbound > armEncoder.getDistance() || theta + errorbound < armEncoder.getDistance()))
         {
@@ -79,41 +79,6 @@ public class arm extends SubsystemBase
         }
 
         //System.out.println("encoder - errorbound" + (armEncoder.getDistance()));
-    }
-    public Command angleCommand(double speed, double theta, double errorBound) 
-    {
-        return Commands.runOnce(()-> angle(speed, theta, errorBound,1)); // Assuming 'this' is the subsystem that includes the arm motors and encoder
-    }
-    public void angle(double speed, double theta, double errorbound,int a)
-    {
-        if(theta - errorbound > armEncoder.getDistance()) 
-        {
-            armMotorA.set(speed * -1);
-            armMotorB.set(speed);
-            while(true)
-            {
-                if(!(theta - errorbound > armEncoder.getDistance()|| theta + errorbound < armEncoder.getDistance()))
-                {
-                    armMotorA.set(0);
-                    armMotorB.set(0);
-                    break;
-                }
-            }
-        } 
-        if(theta + errorbound < armEncoder.getDistance()) 
-        {
-            armMotorA.set(speed * -1);
-            armMotorB.set(speed);
-            while(true)
-            {
-                if(!(theta - errorbound > armEncoder.getDistance()|| theta + errorbound < armEncoder.getDistance()))
-                {
-                    armMotorA.set(0);
-                    armMotorB.set(0);
-                    break;
-                }
-            }
-        }
     }
     public void manuel(boolean up, boolean down, boolean preSetT, boolean preSetO, boolean preSetX, boolean preSetS){
         if(up){
@@ -127,9 +92,9 @@ public class arm extends SubsystemBase
         } else if (preSetO){
             presetO();
         } else if (preSetX){
-            presetS();
-        } else if (preSetS){
             presetX();
+        } else if (preSetS){
+            presetS();
         } else
         {
             armMotorA.set(0);
@@ -140,6 +105,10 @@ public class arm extends SubsystemBase
     public String encoderVal()
     {
         return ""+armEncoder.getDistance();
+    }
+    public static double encoderValu()
+    {
+        return armEncoder.getDistance();
     }
 }
 /*

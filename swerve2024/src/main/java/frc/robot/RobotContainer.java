@@ -4,28 +4,31 @@
 
 package frc.robot;
 
-import edu.wpi.first.math.MathUtil;
-import edu.wpi.first.wpilibj.Filesystem;
-import edu.wpi.first.wpilibj.RobotBase;
-import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import edu.wpi.first.wpilibj.PS4Controller;
-import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.button.CommandJoystick;
-import edu.wpi.first.wpilibj2.command.button.CommandPS4Controller;
-import edu.wpi.first.wpilibj2.command.button.Trigger;
-import frc.robot.Constants.OperatorConstants;
-import frc.robot.subsystems.swervedrive.SwerveSubsystem;
-import frc.robot.subsystems.swervedrive.arm;
-import frc.robot.subsystems.swervedrive.intake;
-import frc.robot.subsystems.swervedrive.shooter;
-
 //import frc.robot.subsystems.swervedrive.test;
 
 import java.io.File;
 
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
+import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.wpilibj.Filesystem;
+import edu.wpi.first.wpilibj.PS4Controller;
+import edu.wpi.first.wpilibj.RobotBase;
+import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.button.CommandJoystick;
+import edu.wpi.first.wpilibj2.command.button.CommandPS4Controller;
+import edu.wpi.first.wpilibj2.command.button.JoystickButton;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
+import frc.robot.Constants.OperatorConstants;
+import frc.robot.subsystems.swervedrive.SwerveSubsystem;
+import frc.robot.subsystems.swervedrive.arm;
+import frc.robot.subsystems.swervedrive.cmdArmF;
+import frc.robot.subsystems.swervedrive.cmdIntake;
+import frc.robot.subsystems.swervedrive.cmdShooter;
+import frc.robot.subsystems.swervedrive.intake;
+import frc.robot.subsystems.swervedrive.shooter;
 
 /**
  * This class is where the bulk of the robot should be declared. Since Command-based is a "declarative" paradigm, very
@@ -35,12 +38,11 @@ import com.pathplanner.lib.auto.NamedCommands;
 public class RobotContainer
 {
   private final SendableChooser<Command> autoChooser;
-  intake Intake = new intake(11);
-  shooter Shooter = new shooter(12, 13);
-  arm Arm = new arm(9, 10, 0);
-  //shooter 1 12
-  //shooter 2 13
-  //intake 11
+  public static intake Intake = new intake(11);
+  public static shooter Shooter = new shooter(12, 13);
+  public static arm Arm = new arm(9, 10, 0);
+  PS4Controller controller = new PS4Controller(0);
+  
   
 
   //test a = new test(9,10); 
@@ -58,14 +60,16 @@ public class RobotContainer
    */
   public RobotContainer()
   {
-    NamedCommands.registerCommand("angle", Arm.angleCommand(0, 0, 0));
-    NamedCommands.registerCommand("b",Arm.angleCommand(0, 0, 0));
-    NamedCommands.registerCommand("c",Arm.angleCommand(0, 0, 0));
+    NamedCommands.registerCommand("angle", new cmdArmF(0.1, 2, 0.05));
+    NamedCommands.registerCommand("b",new cmdArmF(0.1, 2, 0.05));
+    NamedCommands.registerCommand("c",new cmdArmF(0.1, 2, 0.05));
     NamedCommands.registerCommand("inttake",Intake.intakeCommand(true));
     //NamedCommands.registerCommand("shot",Shotter.shotterCommand(#param));
-//intakeCommand
+    //intakeCommand
 
     autoChooser = AutoBuilder.buildAutoChooser();
+    autoChooser.addOption("Test", drivebase.getAutonomousCommand("Line auto"));
+    autoChooser.addOption("Test1", drivebase.getAutonomousCommand("Event auto"));
     SmartDashboard.putData("Auto Chooser", autoChooser);
     double sppedmult = 1;
     // Configure the trigger bindings
@@ -91,8 +95,8 @@ public class RobotContainer
     Command driveFieldOrientedDirectAngle = drivebase.driveCommand(
         () -> MathUtil.applyDeadband(driverPS4.getLeftY()*sppedmult, OperatorConstants.LEFT_Y_DEADBAND),
         () -> MathUtil.applyDeadband(driverPS4.getLeftX()*sppedmult, OperatorConstants.LEFT_X_DEADBAND),
-        () -> driverPS4.getRightX()*-1,
-        () -> driverPS4.getRightY()*-1);
+        () -> driverPS4.getRightX(),
+        () -> driverPS4.getRightY());
 
     // Applies deadbands and inverts controls because joysticks
     // are back-right positive while robot
@@ -121,8 +125,20 @@ public class RobotContainer
    */
   private void configureBindings()
   {
-    // Schedule `ExampleCommand` when `exampleCondition` changes to `true`
+    // Schedule `ExampleCommand` when `exampleCondition` changes to `true`Arm.angleCommand(0.1, 1.12, 0.02)
+    new JoystickButton(driverPS4, 13).whileTrue(new cmdShooter ());
+  }
+  public void PS4buttons()
+  {
+    Shooter.shoot(controller.getL2Button(),controller.getL1Button());
     
+    Intake.griper(controller.getR2Button(), controller.getR1Button());
+
+    Arm.manuel(controller.getOptionsButton(), controller.getShareButton(), controller.getTriangleButton(), controller.getCircleButton(), controller.getSquareButton(), controller.getCrossButton());
+  }
+  public String encoderVals()
+  {
+    return Arm.encoderVal()+"";
   }
 
   /**
@@ -133,7 +149,8 @@ public class RobotContainer
   public Command getAutonomousCommand()
   {
     // An example command will be run in autonomous
-    return drivebase.getAutonomousCommand("New Auto");
+    //return drivebase.getAutonomousCommand("Line auto");
+    return autoChooser.getSelected();
   }
 
   public void setDriveMode()
